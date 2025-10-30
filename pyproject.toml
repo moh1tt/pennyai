@@ -1,0 +1,14 @@
+[project]
+name = "pennyai"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dotenv>=0.9.9",
+    "pandas>=2.3.3",
+    "praw>=7.8.1",
+    "pyarrow>=22.0.0",
+    "tqdm>=4.67.1",
+    "yfinance>=0.2.66",
+]
