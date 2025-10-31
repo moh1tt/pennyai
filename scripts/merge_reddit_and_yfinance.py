@@ -8,6 +8,7 @@ def merge_reddit_yfinance(
     yfinance_path: str,
     output_path: str
 ):
+    print("<--------------------------Running 4 -------------------------->")
 
     reddit_df = pd.read_parquet(reddit_path)
     yfin_df = pd.read_parquet(yfinance_path)
@@ -58,6 +59,11 @@ def merge_reddit_yfinance(
         "error",
         "last_updated"
     ]
+
+    for col in final_cols:
+        if col not in merged_df.columns:
+            merged_df[col] = None
+            print(f"⚠️  Column '{col}' not found, added with None values")
 
     final_df = merged_df[final_cols]
     final_df = final_df.sort_values(

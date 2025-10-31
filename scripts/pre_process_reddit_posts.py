@@ -5,6 +5,7 @@ import os
 
 
 def preprocess(input_path, output_path):
+    print("<--------------------------Running 2 -------------------------->")
     df = pd.read_parquet(input_path)
 
     def extract_tickers(text):

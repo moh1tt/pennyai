@@ -5,6 +5,7 @@ from tqdm import tqdm
 
 
 def enrich_tickers_with_yfinance(input_path, output_path):
+    print("<--------------------------Running 3 -------------------------->")
     df = pd.read_parquet(input_path)
     tickers = df['tickers'].dropna().unique().tolist()
     print(f"Found {len(tickers)} unique tickers.")

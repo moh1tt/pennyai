@@ -13,6 +13,7 @@ REDDIT_USER_AGENT = "pennyai:v0.1 (by u/Effective-Task347)"
 
 
 def fetch_reddit_posts(output_path, limit_per_sub=100, subreddit_list=None):
+    print("<--------------------------Running 1 -------------------------->")
     if subreddit_list is None:
         subreddit_list = ["pennystocks"]  # default single subreddit
 
