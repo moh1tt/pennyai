@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import {
   fetchPennySummary,
@@ -42,7 +43,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-100 p-8 font-sans">
       {/* Header and Summary Cards */}
       <header className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Penny Stocks Dashboard</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">PennyAI - Stocks Dashboard</h1>
         <p className="text-gray-600">Real-time insights and trends on trending penny stocks</p>
       </header>
 
@@ -74,12 +75,15 @@ export default function DashboardPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Updated</th>
               <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Ticker</th>
               <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Name</th>
-              <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Price</th>
-              <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Previous Close</th>
-              <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Market Cap</th>
+              <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Price($)</th>
+              <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Previous Close($)</th>
+              <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Market Cap($)</th>
               <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Sector</th>
+              <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">LLM Summary</th>
+              <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">LLM Verdict</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -89,12 +93,15 @@ export default function DashboardPage() {
                 className="cursor-pointer hover:bg-gray-100"
                 onClick={() => handleTickerClick(stock.reddit_ticker)}
               >
+                <td className="px-4 py-2 text-gray-700">{stock.created_utc}</td>
                 <td className="px-4 py-2 text-gray-900 font-medium">{stock.reddit_ticker}</td>
                 <td className="px-4 py-2 text-gray-700">{stock.long_name || stock.short_name}</td>
-                <td className="px-4 py-2 text-gray-700">{stock.current_price ?? "—"}</td>
-                <td className="px-4 py-2 text-gray-700">{stock.previous_close ?? "—"}</td>
-                <td className="px-4 py-2 text-gray-700">{stock.market_cap ?? "—"}</td>
+                <td className="px-4 py-2 text-gray-700">${stock.current_price ?? "—"}</td>
+                <td className="px-4 py-2 text-gray-700">${stock.previous_close ?? "—"}</td>
+                <td className="px-4 py-2 text-gray-700">${stock.market_cap ?? "—"}</td>
                 <td className="px-4 py-2 text-gray-700">{stock.sector ?? "—"}</td>
+                <td className="px-4 py-2 text-gray-700">{stock.summarized_content ?? "—"}</td>
+                <td className="px-4 py-2 text-gray-700">{stock.verdict ?? "—"}</td>
               </tr>
             ))}
           </tbody>

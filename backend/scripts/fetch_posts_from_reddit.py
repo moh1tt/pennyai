@@ -12,7 +12,7 @@ REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET")
 REDDIT_USER_AGENT = "pennyai:v0.1 (by u/Effective-Task347)"
 
 
-def fetch_reddit_posts(output_path, limit_per_sub=100, subreddit_list=None):
+def fetch_reddit_posts(output_path, limit_per_sub=100, subreddit_list=None, top_n=100):
     print("<--------------------------Running 1 -------------------------->")
     if subreddit_list is None:
         subreddit_list = ["pennystocks"]  # default single subreddit
@@ -30,7 +30,8 @@ def fetch_reddit_posts(output_path, limit_per_sub=100, subreddit_list=None):
         print(f"\nFetching from r/{sub_name}...")
         for post in tqdm(subreddit.new(limit=limit_per_sub), desc=f"r/{sub_name} posts"):
             post.comments.replace_more(limit=0)
-            comments = [c.body for c in post.comments[:10]]  # Top 10 comments
+            # Top n comments
+            comments = [c.body for c in post.comments[:top_n]]
 
             all_posts.append({
                 "subreddit": sub_name,

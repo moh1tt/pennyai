@@ -96,7 +96,7 @@ def get_summary():
 
 
 @app.get("/api/pennystocks/details")
-def get_details(limit: int = None, include_comments: bool = True):
+def get_details(limit: int = None, include_comments: bool = False):
     """
     Returns all columns for all tickers.
     Parameters:
@@ -115,12 +115,7 @@ def get_details(limit: int = None, include_comments: bool = True):
         "summarized_content", "summarized_comments", "verdict"
     ]
 
-    # Optionally exclude comments
-    if not include_comments:
-        columns = [c for c in columns if c not in [
-            "content", "comments", "summarized_comments"]]
-
-    query = f"SELECT {', '.join(columns)} FROM training ORDER BY last_updated DESC"
+    query = f"SELECT {', '.join(columns)} FROM training ORDER BY created_utc DESC"
     if limit is not None:
         query += f" LIMIT {limit}"
 

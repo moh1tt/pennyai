@@ -7,28 +7,50 @@ from scripts.merge_reddit_and_yfinance import merge_reddit_yfinance
 from scripts.create_duckdb_from_parquet import upload_to_db
 from scripts.create_summary_from_langchain import summarize_using_langchain
 
-subreddits_to_fetch = ["pennystocks", "wallstreetbets", "smallstreetbets"]
-today_str = datetime.today().strftime("%Y%m%d")
+subreddits_to_fetch = ["pennystocks", "wallstreetbets",
+                       "smallstreetbets", "RobinHoodPennyStocks"]
 
-if __name__ == "__main__":
+
+def run_pipeline():
+    print("✅ Fetching Reddit posts...")
     fetch_reddit_posts(
-        f"backend/data/reddit_posts_{today_str}.parquet",
-        limit_per_sub=10, subreddit_list=subreddits_to_fetch)
-
-    preprocess(f"backend/data/reddit_posts_{today_str}.parquet",
-               f"backend/data/processed_reddit_posts_{today_str}.parquet")
-
-    enrich_tickers_with_yfinance(
-        f"backend/data/processed_reddit_posts_{today_str}.parquet", f"backend/data/processed_yfinance_info_{today_str}.parquet")
-
-    merge_reddit_yfinance(
-        f"backend/data/processed_reddit_posts_{today_str}.parquet",
-        f"backend/data/processed_yfinance_info_{today_str}.parquet",
-        f"backend/data/llm_ready_dataset_{today_str}.parquet"
+        "backend/data/reddit_posts.parquet",
+        limit_per_sub=10,
+        subreddit_list=subreddits_to_fetch,
+        top_n=20,
     )
 
-    upload_to_db("backend/data/duckdb/pennyai.duckdb",
-                 f"backend/data/llm_ready_dataset_{today_str}.parquet",
-                 "training")
+    print("✅ Preprocessing...")
+    preprocess(
+        "backend/data/reddit_posts.parquet",
+        "backend/data/processed_reddit_posts.parquet",
+    )
 
+    print("✅ YFinance enrich...")
+    enrich_tickers_with_yfinance(
+        "backend/data/processed_reddit_posts.parquet",
+        "backend/data/processed_yfinance_info.parquet",
+    )
+
+    print("✅ Merge datasets...")
+    merge_reddit_yfinance(
+        "backend/data/processed_reddit_posts.parquet",
+        "backend/data/processed_yfinance_info.parquet",
+        "backend/data/llm_ready_dataset.parquet",
+    )
+
+    print("✅ Uploading to DuckDB...")
+    upload_to_db(
+        "backend/data/duckdb/pennyai.duckdb",
+        "backend/data/llm_ready_dataset.parquet",
+        "training",
+    )
+
+    print("✅ Running LLM summaries...")
     summarize_using_langchain("training")
+
+    print("🎉 Pipeline completed!")
+
+
+if __name__ == "__main__":
+    run_pipeline()
