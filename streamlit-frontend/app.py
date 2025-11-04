@@ -49,6 +49,9 @@ st.title("PennyAI Stocks Dashboard and Analytics")
 st.markdown(
     "Real-time insights and trends on trending penny stocks from Reddit + Market Data")
 
+st.markdown(
+    "Note: Please clear cache to refresh data. Data refresh scheduled at 6am daily.")
+
 # -----------------------------
 # LOAD DATA
 # -----------------------------
