@@ -21,11 +21,11 @@ jobs:
 
       - name: Install dependencies
         run: uv sync
-        working-directory: ./backend
+        working-directory: pennyai
 
       - name: Run main.py
-        run: uv run python main.py
-        working-directory: ./backend
+        run: uv run python backend/main.py
+        working-directory: pennyai
         env:
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
           REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
