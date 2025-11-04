@@ -2,8 +2,8 @@ name: Daily Ingest
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # Runs daily at 6 AM UTC
-  workflow_dispatch:      # Optional: allows manual triggering
+    - cron: '0 6 * * *'  # 6 AM UTC daily
+  workflow_dispatch:      # optional manual trigger
 
 jobs:
   run-ingest:
@@ -13,17 +13,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'  # or whichever version you use
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Set up Python with uv
+        run: uv python install
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: uv sync
         working-directory: ./backend
 
       - name: Run main.py
-        run: python main.py
+        run: uv run python main.py
         working-directory: ./backend
         env:
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
