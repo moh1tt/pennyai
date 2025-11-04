@@ -8,12 +8,44 @@ import math
 # APP CONFIG
 # -----------------------------
 st.set_page_config(
-    page_title="PennyAI Dashboard",
-    page_icon="📈",
+    page_title="PennyAI",
+    page_icon="",
     layout="wide",
 )
 
-st.title("📊 PennyAI Stocks Dashboard")
+# Add BEFORE st.title
+st.markdown("""
+    <style>
+        /* Animated gradient keyframes */
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Main background gradient */
+        .stApp {
+            background: linear-gradient(135deg, #0a0a0f, #101024, #0f1a3a);
+            background-size: 200% 200%;
+            animation: gradientMove 15s ease infinite;
+        }
+
+        /* Optional: widget containers */
+        .css-18e3th9, .css-1d391kg {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border-radius: 12px;
+            backdrop-filter: blur(6px);
+        }
+
+        /* Text tweaks */
+        h1, h2, h3, p, span {
+            color: #e8e8ff !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+
+st.title("PennyAI Stocks Dashboard and Analytics")
 st.markdown(
     "Real-time insights and trends on trending penny stocks from Reddit + Market Data")
 
@@ -32,183 +64,166 @@ def load_data():
 
 df = load_data()
 
-# -----------------------------
-# SIDEBAR FILTERS
-# -----------------------------
-st.sidebar.header("🔍 Filters")
-
-sectors = ["All"] + sorted(df["sector"].dropna().unique().tolist())
-countries = ["All"] + sorted(df["country"].dropna().unique().tolist())
-
-selected_sector = st.sidebar.selectbox("Sector", sectors)
-selected_country = st.sidebar.selectbox("Country", countries)
-search_ticker = st.sidebar.text_input("Search Ticker or Symbol")
-
-market_cap_min, market_cap_max = st.sidebar.slider(
-    "Market Cap Range (USD)",
-    int(df["market_cap"].min()),
-    int(df["market_cap"].max()),
-    (int(df["market_cap"].min()), int(df["market_cap"].max())),
-    step=1_000_000,
-)
-
-# Apply filters
-filtered = df.copy()
-if selected_sector != "All":
-    filtered = filtered[filtered["sector"] == selected_sector]
-if selected_country != "All":
-    filtered = filtered[filtered["country"] == selected_country]
-filtered = filtered[
-    (filtered["market_cap"] >= market_cap_min)
-    & (filtered["market_cap"] <= market_cap_max)
-]
-if search_ticker:
-    search_ticker = search_ticker.lower()
-    filtered = filtered[
-        filtered["reddit_ticker"].str.lower().str.contains(search_ticker)
-        | filtered["yfinance_symbol"].str.lower().str.contains(search_ticker)
-    ]
 
 # -----------------------------
-# KPI SUMMARY
+# KPI METRICS
 # -----------------------------
-st.markdown("### 📌 Market Summary")
+# Most recent timestamp
+last_updated = pd.to_datetime(df["created_utc"].max())
+
+# Total distinct tickers
+total_stocks = df["reddit_ticker"].nunique()
+
+# Top mover (based on percent change)
+if "percent_change" in df.columns:
+    top_mover_row = df.loc[df["percent_change"].idxmax()]
+else:
+    df["percent_change"] = (
+        (df["previous_close"] - df["open"]) / df["open"]) * 100
+    top_mover_row = df.loc[df["percent_change"].idxmax()]
+
+top_mover = top_mover_row["reddit_ticker"]
+top_mover_change = round(top_mover_row["percent_change"], 2)
+
+# Most talked-about ticker (count of mentions)
+talk_counts = df["reddit_ticker"].value_counts()
+most_talked = talk_counts.idxmax()
+most_talked_count = talk_counts.max()
+
+st.markdown("""
+<style>
+.kpi-card {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.kpi-title {
+    font-size: 20px;
+    color: #d8d8ff;
+    margin-bottom: 8px;
+}
+.kpi-value {
+    font-size: 32px;
+    font-weight: bold;
+    color: #ffffff;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# -----------------------------
+# DISPLAY KPI CARDS
+# -----------------------------
 
 col1, col2, col3, col4 = st.columns(4)
-col1.metric("Total Stocks", len(filtered))
-col2.metric("Avg Price", f"${filtered['current_price'].mean():,.2f}")
-col3.metric("Avg Market Cap", f"${filtered['market_cap'].mean():,.0f}")
-col4.metric("Avg Volume", f"{filtered['volume'].mean():,.0f}")
 
-# Top gainer
-filtered["pct_change"] = (
-    (filtered["current_price"] - filtered["previous_close"])
-    / filtered["previous_close"]
-) * 100
-top_gainer = filtered.sort_values("pct_change", ascending=False).head(1)
+with col1:
+    st.markdown(f"""
+    <div class='kpi-card'>
+        <div class='kpi-title'>Total Stocks</div>
+        <div class='kpi-value'>{total_stocks}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-if not top_gainer.empty:
-    st.success(
-        f"💹 **Top Gainer:** {top_gainer.iloc[0]['reddit_ticker']} "
-        f"({top_gainer.iloc[0]['pct_change']:.2f}%)"
-    )
+with col2:
+    st.markdown(f"""
+    <div class='kpi-card'>
+        <div class='kpi-title'>Top Mover</div>
+        <div class='kpi-value'>{top_mover} ({top_mover_change}%)</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# -----------------------------
-# CHARTS
-# -----------------------------
-st.markdown("### 📊 Visual Insights")
+with col3:
+    st.markdown(f"""
+    <div class='kpi-card'>
+        <div class='kpi-title'>Most Talked</div>
+        <div class='kpi-value'>{most_talked} ({most_talked_count})</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-chart1, chart2 = st.columns(2)
+with col4:
+    st.markdown(f"""
+    <div class='kpi-card'>
+        <div class='kpi-title'>Last Updated</div>
+        <div class='kpi-value'>{last_updated.strftime("%Y-%m-%d %H:%M UTC")}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Sector Distribution
-sector_counts = (
-    filtered.groupby("sector")[
-        "reddit_ticker"].count().reset_index(name="count")
-)
-fig_sector = px.bar(
-    sector_counts,
-    x="sector",
-    y="count",
-    title="Companies per Sector",
-    color="sector",
-    text="count",
-)
-chart1.plotly_chart(fig_sector, use_container_width=True)
-
-# Market Cap vs Price
-fig_scatter = px.scatter(
-    filtered,
-    x="market_cap",
-    y="current_price",
-    color="sector",
-    size="volume",
-    hover_data=["long_name", "country"],
-    title="Market Cap vs Current Price",
-)
-chart2.plotly_chart(fig_scatter, use_container_width=True)
 
 # -----------------------------
-# TOP MOVERS
+# LATEST NEWS
 # -----------------------------
-st.markdown("### 🚀 Top Movers")
-movers = filtered.sort_values("pct_change", ascending=False).head(10)
-fig_movers = px.bar(
-    movers,
-    x="reddit_ticker",
-    y="pct_change",
-    color="pct_change",
-    text="pct_change",
-    title="Top 10 Daily Gainers",
-)
-st.plotly_chart(fig_movers, use_container_width=True)
+st.subheader("Latest Reddit Insights")
 
-# -----------------------------
-# PAGINATED TABLE
-# -----------------------------
-st.markdown("### 🧾 Stock Details")
+latest_df = df.sort_values("created_utc", ascending=False).head(20)
 
-page_size = st.sidebar.number_input("Rows per page", 5, 50, 10)
-total_pages = math.ceil(len(filtered) / page_size)
-page = st.sidebar.number_input("Page", 1, total_pages, 1)
+for _, row in latest_df.iterrows():
+    sentiment_color = {
+        "bullish": "#00ff95",
+        "bearish": "#ff4b4b",
+        "neutral": "#9ea7ff"
+    }.get(str(row["verdict"]).lower(), "#cccccc")
 
-start_idx = (page - 1) * page_size
-end_idx = start_idx + page_size
-page_data = filtered.iloc[start_idx:end_idx]
+    st.markdown(f"""
+    <div style="
+        background: rgba(255,255,255,0.05);
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(255,255,255,0.07);
+    ">
+        <div style="font-size:20px; font-weight:600; color:#b9e6ff;">
+            {row['reddit_ticker']} — {row['long_name']} - ${row['current_price']} - {row['sector']}
+        </div>
+        <div style="font-size:14px; color:#7f9ebd; margin-bottom:8px;">
+            {pd.to_datetime(row['created_utc'], unit='s').strftime('%Y-%m-%d %H:%M UTC')}
+        </div>
+        <div style="font-size:15px; color:#eaeafe;">
+            {row['summarized_content']} <br> <br> {row['summarized_comments']} <a href="{row['website']}" target="_blank" style="color:#b9e6ff; text-decoration:underline;">
+        {row['website']}
+        </div>
+        <div style="
+            margin-top:10px;
+            display:inline-block;
+            padding:4px 10px;
+            background:{sentiment_color};
+            color:black;
+            border-radius:8px;
+            font-weight:600;
+            font-size:12px;
+        ">
+            {row['verdict']}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.dataframe(
-    page_data[
-        [
-            "created_utc", "reddit_ticker", "yfinance_symbol", "long_name", "sector",
-            "market_cap", "current_price", "previous_close", "volume", "pct_change"
-        ]
-    ].sort_values("market_cap", ascending=False),
-    use_container_width=True,
-)
 
-# -----------------------------
-# MODAL: SELECTED TICKER
-# -----------------------------
-st.markdown("### 🔎 Company Details")
+st.markdown("""
+<style>
+.footer {
+    text-align: center;
+    padding: 15px 0;
+    font-size: 14px;
+    color: #7f9ebd;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: 40px;
+}
+.footer a {
+    color: #91e2ff;
+    text-decoration: none;
+    margin: 0 8px;
+}
+.footer a:hover {
+    text-decoration: underline;
+}
+</style>
 
-selected_ticker = st.selectbox(
-    "Select a ticker to view details",
-    ["None"] + sorted(page_data["reddit_ticker"].unique().tolist()),
-)
-
-if selected_ticker != "None":
-    details = filtered[filtered["reddit_ticker"] == selected_ticker].iloc[0]
-
-    st.markdown(
-        f"## 🏢 {details['reddit_ticker']} - {details.get('long_name', 'N/A')}")
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.write(f"**Price:** ${details['current_price']}")
-        st.write(f"**Previous Close:** ${details['previous_close']}")
-        st.write(f"**Market Cap:** ${details['market_cap']:,.0f}")
-        st.write(f"**Volume:** {details['volume']:,.0f}")
-        st.write(f"**Change:** {details['pct_change']:.2f}%")
-
-    with col2:
-        st.write(f"**Sector:** {details['sector']}")
-        st.write(f"**Country:** {details['country']}")
-        st.write(f"**Currency:** {details.get('currency', '—')}")
-        st.write(f"**Employees:** {details.get('employees', '—')}")
-        st.write(f"**Founded:** {details.get('founded', '—')}")
-
-    st.markdown("---")
-    st.markdown("#### 💬 LLM Summary")
-    st.info(details.get("summarized_content", "No summary available."))
-
-    st.markdown("#### 🧠 LLM Verdict")
-    st.warning(details.get("verdict", "No verdict available."))
-
-    if details.get("website"):
-        st.markdown(f"[🌐 Visit Website]({details['website']})")
-
-# -----------------------------
-# FOOTER
-# -----------------------------
-st.markdown("---")
-st.caption(
-    "💡 Data from Reddit sentiment + Yahoo Finance | Built with Streamlit + DuckDB + Plotly")
+<div class="footer">
+    Made by moh1tt | 
+    <a href="https://www.linkedin.com/in/moh1tt" target="_blank">LinkedIn</a> | 
+    <a href="mailto:mohitt.appari@gmail.com" target="_blank">Email</a> | 
+    <a href="https://moh1tt.vercel.app" target="_blank">Website</a>
+</div>
+""", unsafe_allow_html=True)
