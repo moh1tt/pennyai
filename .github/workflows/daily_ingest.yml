@@ -1,34 +1,31 @@
-# name: Daily Ingest
+name: Daily Ingest
 
-# on:
-#   schedule:
-#     - cron: '0 6 * * *'  # Runs at 6 AM UTC daily
-#   workflow_dispatch:  # Allows manual triggering
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Runs daily at 6 AM UTC
+  workflow_dispatch:      # Optional: allows manual triggering
 
-# jobs:
-#   run-ingest:
-#     runs-on: ubuntu-latest
-    
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v4
-      
-#       - name: Install uv
-#         uses: astral-sh/setup-uv@v3
-        
-#       - name: Set up Python
-#         run: uv python install
-      
-#       - name: Install dependencies
-#         run: uv sync
-#         working-directory: ./backend
-      
-#       - name: Run main.py
-#         run: uv run python main.py
-#         working-directory: ./backend
-#         env:
-#           # Add any environment variables your script needs
-#           # EXAMPLE: API_KEY: ${{ secrets.API_KEY }}
-#           REDDIT_CLIENT_ID:  ${{ secrets.REDDIT_CLIENT_ID }}
-#           REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
-#           GROQ_API: ${{ secrets.GROQ_API }}
+jobs:
+  run-ingest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'  # or whichever version you use
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        working-directory: ./backend
+
+      - name: Run main.py
+        run: python main.py
+        working-directory: ./backend
+        env:
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          GROQ_API: ${{ secrets.GROQ_API }}
