@@ -21,7 +21,7 @@ class FinancialSummary(BaseModel):
 
 
 def summarize_using_langchain(TABLE_NAME):
-    con = duckdb.connect("data/duckdb/pennyai.duckdb")
+    con = duckdb.connect("backend/data/duckdb/pennyai.duckdb")
 
     df = con.execute(f"""
     SELECT row_id, content, comments
