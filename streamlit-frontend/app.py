@@ -162,7 +162,12 @@ st.subheader("Latest Reddit Insights")
 
 latest_df = df.sort_values("created_utc", ascending=False).head(20)
 
+
 for _, row in latest_df.iterrows():
+    # safely get value, default to empty string
+    verdict = row.get('verdict', '').strip()
+    if not verdict:
+        verdict = 'N/A'  # or 'Hold' if you want a default
     sentiment_color = {
         "bullish": "#00ff95",
         "bearish": "#ff4b4b",
@@ -197,7 +202,7 @@ for _, row in latest_df.iterrows():
             font-weight:600;
             font-size:12px;
         ">
-            {row['verdict']}
+            {verdict}
         </div>
     </div>
     """, unsafe_allow_html=True)
