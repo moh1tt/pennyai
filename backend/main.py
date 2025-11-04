@@ -15,9 +15,9 @@ def run_pipeline():
     print("✅ Fetching Reddit posts...")
     fetch_reddit_posts(
         "backend/data/reddit_posts.parquet",
-        limit_per_sub=2,
+        limit_per_sub=20,
         subreddit_list=subreddits_to_fetch,
-        top_n=2,
+        top_n=20,
     )
 
     print("✅ Preprocessing...")
