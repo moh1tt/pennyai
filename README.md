@@ -2,6 +2,9 @@
 
 **PennyAI** is an end-to-end data pipeline and analysis platform designed to help traders and investors make smarter decisions on penny stocks. It ingests Reddit posts, enriches them with market data, and provides actionable insights using AI-driven summarization.
 
+![PennyAI Streamlit](pennyai-home.png)
+
+
 ---
 
 ## 🚀 Features
@@ -105,14 +108,8 @@ The pipeline runs automatically every day using GitHub Actions:
 5. **Dashboard:**  
    Visualizes trends, summaries, and key stock information for decision-making.
 
----
 
-## 🖼 Screenshots
 
-_Streamlit frontend screenshot_  
-![PennyAI Streamlit](pennyai-home.png)
-
----
 
 ## 🛠 Tech Stack
 
@@ -135,5 +132,5 @@ _Streamlit frontend screenshot_
 
 Made with ❤️ by **Mohit Appari**  
 - [LinkedIn](https://www.linkedin.com/in/moh1tt)  
-- [Email](mailto:moh1tt.vercel.app)
+- [Website](mailto:moh1tt.vercel.app)
 
